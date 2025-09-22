@@ -1,0 +1,16 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  color: #fff;
+}
+#gameCanvas {
+  display: block;
+  margin: 24px auto;
+  border: 1px solid #444;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  /* Scale the canvas for visibility while keeping internal resolution */
+  width: 800px;
+  height: 600px;
+}
