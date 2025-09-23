@@ -1,35 +1,35 @@
+<!-- Entry point for the Snake HTML5 game: sets up the page structure, canvas, and loads scripts. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FF1 Foundation</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Snake</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <canvas id="gameCanvas" width="320" height="240"></canvas>
+  <main class="wrapper" aria-label="Snake game container">
+    <header class="topbar" aria-label="Game header">
+      <h1 class="title">Snake</h1>
+      <div class="hud" aria-label="Scoreboard">
+        <span class="pill" aria-live="polite">Score: <strong id="score">0</strong></span>
+        <span class="pill" aria-live="polite">Best: <strong id="best">0</strong></span>
+      </div>
+    </header>
 
-  <script src="src/core/boot.js"></script>
-  <script src="src/core/input.js"></script>
-  <script src="src/core/loop.js"></script>
+    <canvas id="game-canvas" width="576" height="432" role="img" aria-label="Snake game area"></canvas>
+    <!-- Accessibility: The aria-label describes the canvas for assistive technologies. -->
 
-  <script src="src/engine/renderer.js"></script>
-  <script src="src/engine/audio.js"></script>
-  <script src="src/engine/ui.js"></script>
-  <script src="src/engine/ui/dialog.js"></script>
-  
-  <script src="src/utils/math.js"></script>
-  <script src="src/utils/storage.js"></script>
+    <div class="hint" role="note" aria-label="Game instructions">
+      <span class="hint-icon" aria-hidden="true">i</span>
+      <span class="hint-text">Use Arrow Keys or WASD to move. Press Space to restart after Game Over.</span>
+    </div>
+  </main>
 
-  <script src="src/game/constants.js"></script>
-  <script src="src/game/enemies.js"></script>
-  <script src="src/game/formations.js"></script>
-  <script src="src/game/progression.js"></script>
-  <script src="src/game/inventory.js"></script>
-  <script src="src/game/levels.js"></script>
-  <script src="src/game/player.js"></script>
-  <script src="src/game/encounters.js"></script>
-  <script src="src/game/combat.js"></script>
-  <script src="src/game/main.js"></script>
+  <!-- Load order (simple): physics → entities → systems → game -->
+  <script src="physics.js"></script>
+  <script src="entities.js"></script>
+  <script src="systems/audio.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>

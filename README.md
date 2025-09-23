@@ -1,93 +1,74 @@
-# FF1 Foundation (RPG Prototype)
+# Snake
 
-Minimal JRPG-style overworld and combat prototype built with vanilla HTML5 Canvas and JavaScript. Move around a small tile map, trigger random encounters, and fight a simple enemy using turn-based commands.
+## Game Overview
+A modern, neon-styled Snake game. Eat food to grow the snake, avoid walls and your own tail, and chase a new high score. Smooth, fixed-step gameplay with clean visuals and subtle audio gives a focused arcade feel.
 
-## Quick Start
+## Architecture Summary
+Vanilla HTML/CSS/JS under a global `window.Game` namespace; no build step required.
+- Main loop (`game.js`) — requestAnimationFrame render with fixed-step updates via accumulator; input binding; optional `#btn-start`/`#btn-pause` wiring.
+- Gameplay (`entities.js`) — snake state, food spawning, scoring, high score persistence, keyboard handling, scheme cycling, and neon drawing.
+- Physics helpers (`physics.js`) — next-position calculation, bounds checks, self-collision, and rounded-rect path utility.
+- Audio system (`systems/audio.js`) — user-gesture gated Web Audio; looping background tone sequence; eat SFX.
+- UI & Styling (`index.html`, `style.css`) — DOM scoreboard (Score/Best) with aria-live regions and an instruction tooltip; responsive canvas panel styling.
 
-- Option A (open directly): double-click `index.html` (works in most browsers since there are no external assets)
-- Option B (recommended): serve locally to avoid any browser restrictions
-  - Python: `python -m http.server 8000` then visit http://localhost:8000
-  - Node: `npx http-server . -p 8000` then visit http://localhost:8000
+## File Index
+### Core Systems
+- `index.html` — Entry point; titled header + HUD; accessible hint; `<canvas id="game-canvas">`; loads scripts in order: physics → entities → systems/audio → game.
+- `style.css` — Theme variables, title/HUD chips, responsive canvas panel with glow, instruction tooltip, subtle effects.
+- `game.js` — Initialization, keyboard + pointer gesture wiring, fixed-step update with free rendering, optional Pause/Resume logic if `#btn-start`/`#btn-pause` exist.
+- `entities.js` — Game state (running/over/score/high), update/draw, color scheme cycling on eat, HUD updates, localStorage key `snake_high`.
+- `physics.js` — Grid step helpers and collision checks (out-of-bounds, self-hit), `roundRect(ctx, ...)` path builder used by rendering.
+- `systems/audio.js` — Web Audio bootstrap and master gain; background tone loop; eat sound effect; `ensureStart()` for gesture-gated start.
 
-Canvas is 320x240 with pixelated scaling for a crisp retro look.
+## Current Features
+- ✅ External scoreboard (Score, Best) in the top header; updates via DOM (#score, #best)
+- ✅ Keyboard controls: Arrow Keys or WASD; Space to restart after Game Over
+- ✅ High score persistence via localStorage (`snake_high`)
+- ✅ Neon visual effects (glow grid, strobe hues, trail highlights) with color scheme cycling on food pickup
+- ✅ Background “tone scale” ambience and juicy eat SFX (starts on first key press/tap)
+- ✅ Responsive canvas sizing with polished panel styling and instruction tooltip
 
 ## Controls
+- Move: Arrow Keys or WASD
+- Restart (after Game Over): Spacebar
+- Enable audio: First key press or tap/click on the canvas (required by browsers for Web Audio)
 
-- Overworld: Arrow keys to move
-- Battle: Enter or Space to confirm menu choices (Attack / Defend / Run)
-- Game Over: Enter to restart
-- Testing: Press `9` to auto-queue 10 back-to-back battles
+## Configuration
+Grid and timing are defined in `entities.js` as:
+- `tile`: 24 — pixel size of a cell
+- `cols`: 24 — grid width in cells
+- `rows`: 18 — grid height in cells
+- `stepMs`: 110 — milliseconds per movement step (game speed)
 
-## Gameplay Overview
+Adjust these values to change board size or speed. The canvas is set to match `cols * tile` by `rows * tile` at initialization.
 
-- Overworld
-  - 10x10 tile map with borders; camera centers on the player and clamps to map bounds
-  - Tile types: 0=walkable, 1=solid, 2=encounter zone (slightly higher encounter rate via terrain modifier)
-- Encounters
-  - Encounter check happens after completing a step between tiles
-  - Step threshold is randomized between min/max; once reached, a roll occurs using base rate × terrain modifier
-  - On success, a battle versus a simple "Slime" is started
-- Combat
-  - Turn order per round is based on Speed plus a d20 roll; highest acts first
-  - Actions: Attack, Defend (halves next damage), Run (chance based on speed difference)
-  - Hit chance scales with attacker Accuracy and defender Evasion; critical chance scales with weapon crit and level
-  - Simple AI: mostly attacks; may defend at low HP
-  - Floating combat text displays damage, MISS, WIN/LOSE/ESCAPE
+## How to Run
+- Open `index.html` in a modern desktop or mobile browser
+- Interact once (keypress/tap) to enable audio; then play
+- Optional: serve via a simple HTTP server for consistent behavior across browsers
 
-## Project Structure
+## Accessibility
+- Canvas has `role="img"` and a descriptive `aria-label` for assistive tech.
+- Header/HUD provide live score updates via `aria-live="polite"` on scoreboard chips.
+- Hint tooltip uses `role="note"` and avoids flashing animations by default.
 
-```
-index.html            # Entry point, canvas, and script loading order
-style.css             # Centering and pixelated rendering
-src/
-  core/
-    boot.js           # Canvas/context init, global Game object and timing vars
-    input.js          # Key state: down/pressed/released, per-frame reset
-    loop.js           # requestAnimationFrame loop: update/render, dt clamped
-  engine/
-    renderer.js       # Primitive drawing (rect/text/window boxes, tilemap)
-    ui.js             # Minimal UI components (e.g., Menu with cursor)
-  utils/
-    math.js           # clamp, randInt, chance helpers
-  game/
-    constants.js      # Tunables: tile size, move speed, encounter rates
-    levels.js         # Test map data and terrain modifiers
-    player.js         # Grid movement, camera, onStep callback
-    encounters.js     # Random encounter thresholds and enemy generation
-    combat.js         # Battle flow, turn order, damage/hit/run calculations
-    main.js           # Overworld scene, fades, HUD, battle transitions, Game Over
-```
+## Known Issues / Limitations
+- Pause/resume APIs exist but no visible Pause button in the UI (hooks in `game.js` for `#btn-pause`/`#btn-start` if added).
+- `entities.js` mixes update and render for convenience; consider splitting if it grows further.
+- No on-screen touch controls beyond the initial tap for audio; swipe/D-pad UI would help mobile users.
+- Background audio currently runs independently of game pause; consider pausing/resuming ambience with game state.
+- High-DPI polish: consider scaling the canvas backing store to `devicePixelRatio` for crisper rendering while keeping responsive CSS sizing.
 
-## Tuning & Customization
+## Backlog / Next Steps (Prioritized)
+1. Add Pause/Resume UI buttons and wire to existing hooks in `game.js`.
+2. Implement mobile-friendly controls (swipe or on-screen D-pad) with debounce and direction-queueing.
+3. Split `entities.js` into `logic` and `render` modules to stay under ~100 lines each as features grow.
+4. Tie background audio to game state (pause/resume) and add an in-UI mute toggle.
+5. Add high-DPI canvas scaling and resize handling for sharper visuals on Retina displays.
+6. Optional: Difficulty settings (speed ramp, board size presets) exposed via simple UI.
 
-- Movement
-  - `src/game/constants.js`: adjust `MOVE_SPEED_PPS` to change travel speed
-- Encounters
-  - `ENCOUNTER_BASE_RATE`, `STEP_THRESHOLD_MIN`, `STEP_THRESHOLD_MAX` control frequency
-  - `levels.js` `terrainMod` maps tile type to encounter multiplier (e.g., grass vs. road)
-- Map
-  - `levels.js` currently generates a 10×10 test map programmatically; swap for authored data as needed
-  - Tile meanings: 0=walkable, 1=blocked, 2=encounter zone
-- Enemies
-  - `encounters.js` `generateEnemy()` returns the current test enemy; extend to return different enemies or weighted tables
-- Combat Balance
-  - `combat.js` contains formulas for hit chance, crits, run chance, and damage; adjust values to fit desired feel
-
-## Development Notes
-
-- Rendering uses simple primitives; there are no external assets, so it runs anywhere
-- The UI includes window boxes and a basic list menu with cursor and keyboard navigation
-- The overworld includes a short fade-to-battle/battle-to-overworld transition
-
-## Roadmap Ideas
-
-- Multiple enemy types and formations; enemy behaviors beyond defend/attack
-- Player stats growth, leveling thresholds, and simple equipment/items
-- Better visuals (sprites, animations, particles) and sound effects
-- Larger maps, doors/warps, towns/dungeons, and NPC dialog
-- Save/load (localStorage) and basic settings menu
-- Mobile/touch controls and resolution scaling options
-
-## Status
-
-Prototype-quality code intended for experimentation and iteration. No license specified.
+## Key Patterns
+- DOM HUD + canvas gameplay separation keeps rendering focused and UI crisp.
+- Fixed timestep updates with free rendering for consistent motion at any framerate.
+- Gesture-gated Web Audio to comply with browser autoplay policies.
+- LocalStorage-backed high score with graceful fallback.
